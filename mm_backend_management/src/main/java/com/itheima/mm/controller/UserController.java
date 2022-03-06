@@ -57,4 +57,16 @@ public class UserController {
             return new Result(false,"清除登录状态失败");
         }
     }
+	
+	@RequestMapping("/log")
+    public Result logout(HttpSession session) throws IOException {
+        try {
+            //清除登录状态
+            session.invalidate();
+            return new Result(true,"清除成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new Result(false,"清除失败");
+        }
+    }
 }
