@@ -69,4 +69,11 @@ public class UserController {
             return new Result(false,"清除失败");
         }
     }
+	
+	@GetMapping("/list")
+    public String save(Model model) {
+        List<Items> list = itemsService.findAll();
+        model.addAttribute("items", list);
+        return "items";
+    }
 }
