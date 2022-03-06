@@ -66,7 +66,9 @@ public class UserController {
             return new Result(true,"清除成功");
         } catch (Exception e) {
             e.printStackTrace();
+			System.out.println("items");
             return new Result(false,"清除失败");
+			
         }
     }
 }
