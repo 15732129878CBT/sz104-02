@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itheima.mm.dao.CourseDao">
+    <sql id="select_where">
+        <where>
+            <if test="queryParams.name != null and queryParams.name.length>0">
+                and name like "%"#{queryParams.name}"%"
+            </if>
+            <if test="queryParams.status != null and queryParams.status.length>0">
+                and isShow = #{queryParams.status}
+            </if>
+        </where>
+    </sql>
+
+    <insert id="addCourse" parameterType="Course">
+        insert into t_course(name,createDate,isShow,userId,orderNo)
+        values(#{name},#{createDate},#{isShow},#{userId},#{orderNo})
+    </insert>
+
+    <select id="findTotalCourse" parameterType="QueryPageBean" resultType="long">
+        select count(*) from t_course
+        <include refid="select_where"></include>
+    </select>
+
+    <select id="findCurrentPage" parameterType="QueryPageBean" resultType="course">
+          select
+            tc.id,
+            tc.name,
+            (select name from t_user where id = tc.userId) creator,
+            tc.createDate,
+            tc.isShow,
+            (select count(*) from t_catalog where courseId = tc.id) catalogQty,
+            (select count(*) from t_tag where courseId = tc.id) tagQty,
+            (select count(*) from t_question where courseId = tc.id) questionQty
+           from t_course tc
+          <include refid="select_where"></include>
+          limit #{offset},#{pageSize}
+    </select>
+
+    <update id="updateCourse" parameterType="course">
+        update t_course set name = #{name},isShow = #{isShow} where id = #{id}
+    </update>
+
+    <delete id="deleteCourseByID" parameterType="int">
+        delete from t_course where id = #{id}
+    </delete>
+
+    <resultMap id="courseMap" type="Course" autoMapping="true">
+        <id column="id" property="id"></id>
+        
+        <collection property="catalogList" column="id" select="com.itheima.mm.dao.CatalogDao.findCatalogListByCourseId">
+        </collection>
+
+        <collection property="tagList" column="id" select="com.itheima.mm.dao.TagDao.findTagListByCourseId">
+        </collection>
+    </resultMap>
+
+    <select id="findAll" parameterType="map" resultMap="courseMap">
+        select id,name from t_course
+        <where>
+            <if test="status != null">
+                isShow=#{status}
+            </if>
+        </where>
+    </select>
+</mapper>

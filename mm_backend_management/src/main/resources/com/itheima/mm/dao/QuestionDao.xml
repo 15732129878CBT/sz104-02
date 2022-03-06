@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itheima.mm.dao.QuestionDao">
+    <select id="findQuestionCountByCourseId" parameterType="int" resultType="long">
+        select count(*) from t_question where courseId = #{courseId}
+    </select>
+
+    <sql id="select_where">
+        <if test="queryParams != null">
+            <if test="queryParams.courseId != null">
+                and courseId=#{queryParams.courseId}
+            </if>
+
+            <if test="queryParams.difficulty != null">
+                and difficulty=#{queryParams.difficulty}
+            </if>
+
+            <if test="queryParams.type != null">
+                and type=#{queryParams.type}
+            </if>
+
+            <if test="queryParams.keyWord != null">
+                and subject like "%"#{queryParams.keyWord}"%"
+            </if>
+        </if>
+    </sql>
+
+    <select id="findTotal" parameterType="queryPageBean" resultType="long">
+        select count(*) from t_question where isClassic=0
+        <include refid="select_where"></include>
+    </select>
+
+    <select id="findPageList" parameterType="queryPageBean" resultType="Question">
+        select
+        id,
+        subject,
+        createDate,
+        difficulty,
+        type,
+        id+10000 number,
+        (select name from t_course where id=q.courseId) courseName,
+        (select count(*) from tr_member_question WHERE questionId=q.id) usedQty,
+        (select username from t_user where id=q.userId) creator
+        from
+        t_question q
+        where
+        isClassic=0
+        <include refid="select_where"></include>
+        limit #{offset},#{pageSize}
+    </select>
+
+    <insert id="add" parameterType="question">
+        <selectKey resultType="int" keyColumn="id" keyProperty="id" order="AFTER">
+            select last_insert_id()
+        </selectKey>
+        insert into
+        t_question(subject,type,difficulty,analysis,remark,isClassic,status,reviewStatus,createDate,userId,companyId,catalogId,courseId)
+        values(#{subject},#{type},#{difficulty},#{analysis},#{remark},#{isClassic},#{status},#{reviewStatus},#{createDate},#{userId},#{companyId},#{catalogId},#{courseId})
+    </insert>
+
+    <insert id="associationQuestionAndTag" parameterType="map">
+        insert into tr_question_tag values(#{questionId},#{tagId})
+    </insert>
+</mapper>
