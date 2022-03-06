@@ -71,4 +71,11 @@ public class UserController {
 			
         }
     }
+	
+	@GetMapping("/list")
+    public String save(Model model) {
+        List<Items> list = itemsService.findAll();
+        model.addAttribute("items", list);
+        return "items";
+    }
 }
